@@ -120,3 +120,26 @@ supabase/migrations/0001_initial_schema.sql
 ```
 
 Supabase 프로젝트를 만든 뒤 SQL Editor 또는 Supabase CLI로 실행합니다.
+
+## Supabase 프로젝트 생성 순서
+
+1. Supabase에 로그인합니다.
+2. New project를 선택합니다.
+3. 프로젝트 이름은 `chaenggyeo-pet` 또는 `챙겨펫`으로 설정합니다.
+4. Database Password는 안전한 값으로 만들고 별도 보관합니다.
+5. Region은 한국 사용자를 기준으로 가까운 리전을 선택합니다.
+6. Project Settings > API에서 아래 값을 확인합니다.
+   - Project URL
+   - anon public key
+7. 프로젝트 루트에 `.env.local`을 만들고 값을 넣습니다.
+
+```txt
+NEXT_PUBLIC_SUPABASE_URL=Project URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY=anon public key
+```
+
+8. SQL Editor에서 `supabase/migrations/0001_initial_schema.sql` 내용을 실행합니다.
+9. Authentication > Providers에서 Email provider가 활성화되어 있는지 확인합니다.
+10. 개발 서버를 재시작한 뒤 `/signup`, `/login`에서 인증 흐름을 확인합니다.
+
+실제 서비스 배포 시에는 Vercel Project Settings > Environment Variables에도 같은 값을 등록합니다.

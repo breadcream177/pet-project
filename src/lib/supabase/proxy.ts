@@ -1,10 +1,18 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 import type { Database } from "@/types/database";
-import { getSupabaseBrowserEnv } from "./env";
+import { getOptionalSupabaseBrowserEnv } from "./env";
 
 export async function updateSupabaseSession(request: NextRequest) {
-  const { supabaseAnonKey, supabaseUrl } = getSupabaseBrowserEnv();
+  const env = getOptionalSupabaseBrowserEnv();
+
+  if (!env) {
+    return NextResponse.next({
+      request,
+    });
+  }
+
+  const { supabaseAnonKey, supabaseUrl } = env;
   let response = NextResponse.next({
     request,
   });
