@@ -16,22 +16,34 @@
 - React
 - TypeScript
 - Tailwind CSS
-- Supabase 예정: Auth, Database
-- Vercel 예정: 배포
+- Supabase Auth
+- Supabase PostgreSQL
+- Supabase Row Level Security
+- Vercel 배포 예정
 
 ## 현재 구현 상태
 
 - 앱 공통 레이아웃
+- 모바일 하단 네비게이션
 - 오늘 화면 대시보드 뼈대
+- 로그인, 회원가입 화면 뼈대
 - 일정, 반려동물, 설정 페이지 라우팅
 - 반려동물 등록 MVP
-  - 이름
-  - 종류
-  - 기타 종류 직접 입력
-  - 표시 색상
-  - 메모
+- Supabase 브라우저/서버 클라이언트 기초 설정
+- Supabase 초기 DB 스키마와 RLS 정책 문서
 
-현재 반려동물 등록 데이터는 브라우저 메모리 상태로만 관리됩니다. 새로고침하면 사라지며, 서버나 DB에는 저장하지 않습니다.
+현재 반려동물 등록 데이터는 브라우저 메모리 상태로만 관리됩니다. 새로고침하면 사라지며, 서버나 DB에는 저장하지 않습니다. Supabase 연결 후 실제 사용자별 저장으로 교체할 예정입니다.
+
+## 환경 변수
+
+Supabase 연결 전에는 `.env.example`을 참고해 `.env.local`을 만들어야 합니다.
+
+```txt
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+```
+
+`.env.local`은 Git에 커밋하지 않습니다.
 
 ## 실행 방법
 
@@ -66,7 +78,7 @@ npm.cmd run check
 src/app
 ```
 
-페이지 라우팅을 담당합니다. `src/app/pets/page.tsx`는 `/pets` 주소가 됩니다.
+페이지 라우팅을 담당합니다. 예를 들어 `src/app/pets/page.tsx`는 `/pets` 주소가 됩니다.
 
 ```txt
 src/components
@@ -79,3 +91,15 @@ src/features
 ```
 
 기능별 코드를 둡니다. 예를 들어 반려동물 기능은 `src/features/pets`에 둡니다.
+
+```txt
+src/lib/supabase
+```
+
+Supabase 브라우저/서버 클라이언트를 둡니다.
+
+```txt
+supabase/migrations
+```
+
+Supabase DB 스키마와 RLS 정책 SQL을 둡니다.
