@@ -1,6 +1,9 @@
 import { LogoutButton } from "@/features/auth/components/LogoutButton";
+import { requireCurrentUser } from "@/features/auth/server";
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const user = await requireCurrentUser();
+
   return (
     <section className="space-y-5">
       <div>
@@ -14,7 +17,10 @@ export default function SettingsPage() {
       <section className="rounded-lg border border-[#ddd6c8] bg-white p-5 shadow-sm">
         <h2 className="text-lg font-bold">계정</h2>
         <p className="mt-2 text-sm leading-6 text-[#746f66]">
-          Supabase 인증 연결 후 현재 로그인한 계정 정보를 표시합니다.
+          현재 로그인한 계정입니다.
+        </p>
+        <p className="mt-3 rounded-md bg-[#fbfaf7] px-3 py-2 text-sm font-semibold text-[#4d473f]">
+          {user.email}
         </p>
         <div className="mt-5">
           <LogoutButton />

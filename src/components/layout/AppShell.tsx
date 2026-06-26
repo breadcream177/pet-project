@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { LogoutButton } from "@/features/auth/components/LogoutButton";
+import { getCurrentUser } from "@/features/auth/server";
 
 const navItems = [
   { href: "/", label: "오늘", shortLabel: "오늘" },
@@ -11,7 +13,10 @@ type AppShellProps = {
   children: React.ReactNode;
 };
 
-export function AppShell({ children }: AppShellProps) {
+export async function AppShell({ children }: AppShellProps) {
+  const user = await getCurrentUser();
+  const userEmail = user?.email ?? "";
+
   return (
     <div className="min-h-screen bg-[#f7f4ee] pb-20 text-[#25221d] lg:pb-0">
       <header className="sticky top-0 z-20 border-b border-[#ddd6c8] bg-white/95 backdrop-blur">
@@ -33,19 +38,30 @@ export function AppShell({ children }: AppShellProps) {
             ))}
           </nav>
 
-          <div className="hidden gap-2 md:flex">
-            <Link
-              className="rounded-md border border-[#ddd6c8] px-3 py-2 text-sm font-semibold transition hover:border-[#2f5d50] hover:text-[#2f5d50]"
-              href="/login"
-            >
-              로그인
-            </Link>
-            <Link
-              className="rounded-md bg-[#2f5d50] px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#264c42]"
-              href="/signup"
-            >
-              회원가입
-            </Link>
+          <div className="hidden items-center gap-2 md:flex">
+            {user ? (
+              <>
+                <span className="max-w-48 truncate rounded-md bg-[#eaf2e5] px-3 py-2 text-sm font-semibold text-[#2f5d50]">
+                  {userEmail}
+                </span>
+                <LogoutButton compact />
+              </>
+            ) : (
+              <>
+                <Link
+                  className="rounded-md border border-[#ddd6c8] px-3 py-2 text-sm font-semibold transition hover:border-[#2f5d50] hover:text-[#2f5d50]"
+                  href="/login"
+                >
+                  로그인
+                </Link>
+                <Link
+                  className="rounded-md bg-[#2f5d50] px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#264c42]"
+                  href="/signup"
+                >
+                  회원가입
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>

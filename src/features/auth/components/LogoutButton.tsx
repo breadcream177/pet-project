@@ -4,7 +4,11 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
-export function LogoutButton() {
+type LogoutButtonProps = {
+  compact?: boolean;
+};
+
+export function LogoutButton({ compact = false }: LogoutButtonProps) {
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,7 +40,9 @@ export function LogoutButton() {
   return (
     <div>
       <button
-        className="h-11 rounded-md border border-[#d8d0c4] bg-white px-4 text-sm font-semibold text-[#9f3f2f] transition hover:border-[#9f3f2f]"
+        className={`rounded-md border border-[#d8d0c4] bg-white px-4 text-sm font-semibold text-[#9f3f2f] transition hover:border-[#9f3f2f] ${
+          compact ? "h-10" : "h-11"
+        }`}
         disabled={isSubmitting}
         onClick={() => {
           void handleLogout();
