@@ -72,6 +72,7 @@ export type Database = {
           is_active: boolean;
           pet_id: string;
           repeat_rule: Database["public"]["Enums"]["repeat_rule"];
+          start_date: string;
           time: string;
           title: string;
           updated_at: string;
@@ -85,6 +86,7 @@ export type Database = {
           is_active?: boolean;
           pet_id: string;
           repeat_rule: Database["public"]["Enums"]["repeat_rule"];
+          start_date: string;
           time: string;
           title: string;
           updated_at?: string;
@@ -98,6 +100,7 @@ export type Database = {
           is_active?: boolean;
           pet_id?: string;
           repeat_rule?: Database["public"]["Enums"]["repeat_rule"];
+          start_date?: string;
           time?: string;
           title?: string;
           updated_at?: string;

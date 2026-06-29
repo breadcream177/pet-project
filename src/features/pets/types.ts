@@ -1,9 +1,12 @@
 export type Pet = {
+  color: string;
+  created_at?: string;
   id: string;
+  memo: string | null;
   name: string;
   species: string;
-  color: string;
-  memo: string;
+  updated_at?: string;
+  user_id?: string;
 };
 
 export type PetFormValues = {

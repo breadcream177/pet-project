@@ -2,15 +2,24 @@ import { petColorOptions, speciesOptions } from "../data";
 import type { PetFormValues } from "../types";
 
 type PetFormProps = {
+  errorMessage?: string;
+  isSubmitting?: boolean;
   onChange: (field: keyof PetFormValues, value: string) => void;
   onSubmit: () => void;
   values: PetFormValues;
 };
 
-export function PetForm({ onChange, onSubmit, values }: PetFormProps) {
+export function PetForm({
+  errorMessage = "",
+  isSubmitting = false,
+  onChange,
+  onSubmit,
+  values,
+}: PetFormProps) {
   const selectedSpecies =
     values.species === "기타" ? values.customSpecies.trim() : values.species;
-  const canSubmit = values.name.trim().length > 0 && selectedSpecies.length > 0;
+  const canSubmit =
+    values.name.trim().length > 0 && selectedSpecies.length > 0 && !isSubmitting;
 
   return (
     <form
@@ -106,12 +115,18 @@ export function PetForm({ onChange, onSubmit, values }: PetFormProps) {
         </label>
       </div>
 
+      {errorMessage ? (
+        <p className="mt-4 rounded-md bg-[#fff1ed] px-3 py-2 text-sm font-semibold text-[#9f3f2f]">
+          {errorMessage}
+        </p>
+      ) : null}
+
       <button
         className="mt-5 h-11 w-full rounded-md bg-[#2f5d50] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#264c42] disabled:cursor-not-allowed disabled:bg-[#a8b2a4]"
         disabled={!canSubmit}
         type="submit"
       >
-        등록하기
+        {isSubmitting ? "저장 중..." : "등록하기"}
       </button>
     </form>
   );

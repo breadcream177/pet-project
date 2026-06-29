@@ -1,4 +1,4 @@
-import type { ScheduleCategory, RepeatRule, ScheduleDraft } from "./types";
+import type { RepeatRule, ScheduleCategory } from "./types";
 
 export const categoryOptions: Array<{
   label: string;
@@ -20,19 +20,16 @@ export const repeatOptions: Array<{
   { label: "매주", value: "weekly" },
 ];
 
-export const scheduleDrafts: ScheduleDraft[] = [
-  {
-    title: "아침 사료",
-    petName: "모카",
-    category: "meal",
-    repeatRule: "daily",
-    time: "08:00",
-  },
-  {
-    title: "심장사상충 약",
-    petName: "모카",
-    category: "medicine",
-    repeatRule: "weekly",
-    time: "12:30",
-  },
-];
+export const categoryLabels: Record<ScheduleCategory, string> = {
+  care: "돌봄",
+  hospital: "병원",
+  meal: "밥",
+  medicine: "약",
+  walk: "산책",
+};
+
+export const repeatLabels: Record<RepeatRule, string> = {
+  daily: "매일",
+  none: "반복 없음",
+  weekly: "매주",
+};

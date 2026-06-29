@@ -10,7 +10,7 @@ export function PetList({ pets }: PetListProps) {
       <section className="rounded-lg border border-[#ddd6c8] bg-white p-5 shadow-sm">
         <h2 className="text-lg font-bold">아직 등록된 반려동물이 없습니다</h2>
         <p className="mt-2 text-sm leading-6 text-[#746f66]">
-          왼쪽 폼에서 이름과 종류를 입력하면 이곳에 카드가 생깁니다.
+          왼쪽 폼에서 이름과 종류를 입력하면 Supabase DB에 저장됩니다.
         </p>
       </section>
     );

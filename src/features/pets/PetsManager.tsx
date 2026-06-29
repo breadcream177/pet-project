@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { createPetAction } from "./actions";
 import { PetForm } from "./components/PetForm";
 import { PetList } from "./components/PetList";
 import { petColorOptions } from "./data";
@@ -14,36 +15,32 @@ const initialFormValues: PetFormValues = {
   memo: "",
 };
 
-export function PetsManager() {
-  const [pets, setPets] = useState<Pet[]>([]);
+type PetsManagerProps = {
+  pets: Pet[];
+};
+
+export function PetsManager({ pets }: PetsManagerProps) {
+  const [errorMessage, setErrorMessage] = useState("");
   const [formValues, setFormValues] = useState<PetFormValues>(initialFormValues);
+  const [isPending, startTransition] = useTransition();
 
   const handleChange = (field: keyof PetFormValues, value: string) => {
     setFormValues((current) => ({ ...current, [field]: value }));
   };
 
   const handleSubmit = () => {
-    const name = formValues.name.trim();
-    const species =
-      formValues.species === "기타"
-        ? formValues.customSpecies.trim()
-        : formValues.species;
+    setErrorMessage("");
 
-    if (!name || !species) {
-      return;
-    }
+    startTransition(async () => {
+      const result = await createPetAction(formValues);
 
-    setPets((current) => [
-      ...current,
-      {
-        id: crypto.randomUUID(),
-        name,
-        species,
-        color: formValues.color,
-        memo: formValues.memo.trim(),
-      },
-    ]);
-    setFormValues(initialFormValues);
+      if (result.error) {
+        setErrorMessage(result.error);
+        return;
+      }
+
+      setFormValues(initialFormValues);
+    });
   };
 
   return (
@@ -52,13 +49,15 @@ export function PetsManager() {
         <p className="text-sm font-semibold text-[#68735f]">Pets</p>
         <h1 className="mt-1 text-3xl font-bold">반려동물</h1>
         <p className="mt-3 text-sm leading-6 text-[#746f66]">
-          이름, 종류, 표시 색상, 메모만 먼저 등록합니다. 자세한 건강 정보는
-          프로필 상세 화면을 만들 때 분리합니다.
+          이름, 종류, 표시 색상, 메모를 등록합니다. 저장된 정보는 로그인한
+          사용자에게만 보입니다.
         </p>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[420px_1fr]">
         <PetForm
+          errorMessage={errorMessage}
+          isSubmitting={isPending}
           onChange={handleChange}
           onSubmit={handleSubmit}
           values={formValues}

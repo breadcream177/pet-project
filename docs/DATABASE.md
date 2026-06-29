@@ -121,6 +121,14 @@ supabase/migrations/0001_initial_schema.sql
 
 Supabase 프로젝트를 만든 뒤 SQL Editor 또는 Supabase CLI로 실행합니다.
 
+일정 시작일 컬럼을 추가하는 후속 SQL은 아래 파일에 있습니다.
+
+```txt
+supabase/migrations/0002_add_schedule_start_date.sql
+```
+
+이미 `0001_initial_schema.sql`을 실행한 프로젝트라면 `0002_add_schedule_start_date.sql`도 SQL Editor에서 한 번 실행해야 합니다.
+
 ## Supabase 프로젝트 생성 순서
 
 1. Supabase에 로그인합니다.
