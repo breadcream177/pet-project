@@ -14,6 +14,8 @@ export function TodayTaskList({
   todayDateText,
   totalCount,
 }: TodayTaskListProps) {
+  const progress = totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100);
+
   return (
     <section className="flex flex-col rounded-lg border border-[#ddd6c8] bg-white p-5 shadow-sm">
       <div className="flex items-start justify-between gap-4">
@@ -29,7 +31,14 @@ export function TodayTaskList({
         </div>
       </div>
 
-      <div className="mt-6 space-y-3">
+      <div className="mt-5 h-2 rounded-full bg-[#eee7dc]" aria-hidden="true">
+        <div
+          className="h-full rounded-full bg-[#2f5d50] transition-all"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      <div className="mt-6 space-y-3" role="list" aria-label="오늘 일정 체크리스트">
         {tasks.length === 0 ? (
           <div className="rounded-md border border-[#eee7dc] bg-[#fbfaf7] p-4">
             <h3 className="font-semibold">오늘 등록된 일정이 없습니다</h3>
@@ -41,12 +50,23 @@ export function TodayTaskList({
 
         {tasks.map((task) => (
           <article
-            className="grid grid-cols-[64px_1fr_32px] items-center gap-4 rounded-md border border-[#eee7dc] bg-[#fbfaf7] p-4"
+            className={`grid grid-cols-[64px_1fr_44px] items-center gap-4 rounded-md border p-4 transition ${
+              task.completed
+                ? "border-[#dbe8d5] bg-[#f4f9f1]"
+                : "border-[#eee7dc] bg-[#fbfaf7]"
+            }`}
             key={task.id}
+            role="listitem"
           >
             <time className="text-sm font-bold text-[#b56b45]">{task.time}</time>
             <div>
-              <h3 className="font-semibold">{task.title}</h3>
+              <h3
+                className={`font-semibold ${
+                  task.completed ? "text-[#68735f] line-through" : ""
+                }`}
+              >
+                {task.title}
+              </h3>
               <p className="mt-1 text-sm text-[#746f66]">{task.petName}</p>
             </div>
             <CompletionToggle completed={task.completed} scheduleId={task.id} />

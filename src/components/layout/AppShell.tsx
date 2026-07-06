@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { LogoutButton } from "@/features/auth/components/LogoutButton";
 import { getCurrentUser } from "@/features/auth/server";
+import { maskEmail } from "@/lib/privacy";
 
 const navItems = [
   { href: "/", label: "오늘", shortLabel: "오늘" },
@@ -15,7 +16,7 @@ type AppShellProps = {
 
 export async function AppShell({ children }: AppShellProps) {
   const user = await getCurrentUser();
-  const userEmail = user?.email ?? "";
+  const displayEmail = maskEmail(user?.email);
 
   return (
     <div className="min-h-screen bg-[#f7f4ee] pb-20 text-[#25221d] lg:pb-0">
@@ -42,7 +43,7 @@ export async function AppShell({ children }: AppShellProps) {
             {user ? (
               <>
                 <span className="max-w-48 truncate rounded-md bg-[#eaf2e5] px-3 py-2 text-sm font-semibold text-[#2f5d50]">
-                  {userEmail}
+                  {displayEmail}
                 </span>
                 <LogoutButton compact />
               </>

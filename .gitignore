@@ -30,6 +30,15 @@ yarn-error.log*
 
 # env files
 .env*
+!.env.example
+
+# IDE local settings
+/.idea/
+
+# Firebase / Google service credentials
+**/google-services.json
+*service-account*.json
+*firebase-adminsdk*.json
 
 # vercel
 .vercel

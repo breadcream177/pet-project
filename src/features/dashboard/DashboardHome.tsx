@@ -1,4 +1,5 @@
 import { NextAppointmentCard } from "./components/NextAppointmentCard";
+import { TodayReminderSetup } from "./components/TodayReminderSetup";
 import { TodayTaskList } from "./components/TodayTaskList";
 import { WeeklyCalendar } from "./components/WeeklyCalendar";
 import type { CalendarDay, NextAppointment } from "./types";
@@ -21,6 +22,8 @@ export function DashboardHome({
 
   return (
     <section className="flex min-h-[calc(100vh-120px)] flex-col">
+      <TodayReminderSetup tasks={todayTasks} />
+
       <header className="flex items-center justify-between gap-4">
         <div>
           <p className="text-sm font-semibold text-[#68735f]">오늘의 돌봄</p>
@@ -51,7 +54,9 @@ export function DashboardHome({
           ) : (
             <section className="rounded-lg border border-[#ddd6c8] bg-[#2f5d50] p-5 text-white shadow-sm">
               <p className="text-sm font-semibold text-[#d7ead1]">병원 일정</p>
-              <h2 className="mt-3 text-2xl font-bold">등록된 병원 일정 없음</h2>
+              <h2 className="mt-3 text-2xl font-bold">
+                등록된 병원 일정 없음
+              </h2>
               <p className="mt-3 text-sm leading-6 text-[#eef7ea]">
                 병원 일정을 등록하면 가장 가까운 일정이 이곳에 표시됩니다.
               </p>

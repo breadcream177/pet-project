@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import type { Pet } from "@/features/pets/types";
 import { createScheduleAction } from "./actions";
 import { ScheduleComposer } from "./components/ScheduleComposer";
@@ -29,6 +30,7 @@ export function SchedulesManager({ pets, schedules }: SchedulesManagerProps) {
     petId: pets[0]?.id ?? "",
   });
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const handleChange = (field: keyof ScheduleFormValues, value: string) => {
     setFormValues((current) => ({ ...current, [field]: value }));
@@ -49,6 +51,7 @@ export function SchedulesManager({ pets, schedules }: SchedulesManagerProps) {
         ...initialFormValues,
         petId: pets[0]?.id ?? "",
       });
+      router.refresh();
     });
   };
 

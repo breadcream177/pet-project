@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { createPetAction } from "./actions";
 import { PetForm } from "./components/PetForm";
 import { PetList } from "./components/PetList";
@@ -23,6 +24,7 @@ export function PetsManager({ pets }: PetsManagerProps) {
   const [errorMessage, setErrorMessage] = useState("");
   const [formValues, setFormValues] = useState<PetFormValues>(initialFormValues);
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const handleChange = (field: keyof PetFormValues, value: string) => {
     setFormValues((current) => ({ ...current, [field]: value }));
@@ -40,6 +42,7 @@ export function PetsManager({ pets }: PetsManagerProps) {
       }
 
       setFormValues(initialFormValues);
+      router.refresh();
     });
   };
 

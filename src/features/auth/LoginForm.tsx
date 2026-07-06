@@ -1,5 +1,9 @@
 import { AuthCard } from "./components/AuthCard";
 
-export function LoginForm() {
-  return <AuthCard mode="login" />;
+type LoginFormProps = {
+  errorMessage?: string;
+};
+
+export function LoginForm({ errorMessage }: LoginFormProps) {
+  return <AuthCard errorMessage={errorMessage} mode="login" />;
 }

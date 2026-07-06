@@ -1,55 +1,43 @@
 "use client";
 
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { logoutAction } from "@/features/auth/actions";
 
 type LogoutButtonProps = {
   compact?: boolean;
 };
 
 export function LogoutButton({ compact = false }: LogoutButtonProps) {
-  const router = useRouter();
   const [errorMessage, setErrorMessage] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     setErrorMessage("");
-    setIsSubmitting(true);
 
-    try {
-      const supabase = createSupabaseBrowserClient();
-      const { error } = await supabase.auth.signOut();
-
-      if (error) {
-        setErrorMessage(error.message);
-        return;
+    startTransition(async () => {
+      try {
+        await logoutAction();
+        router.replace("/login");
+        router.refresh();
+      } catch {
+        setErrorMessage("로그아웃하지 못했습니다. 잠시 뒤 다시 시도해 주세요.");
       }
-
-      router.refresh();
-      router.push("/login");
-    } catch {
-      setErrorMessage(
-        "Supabase 환경 변수가 설정되지 않았습니다. .env.local을 확인해 주세요.",
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
+    });
   };
 
   return (
     <div>
       <button
-        className={`rounded-md border border-[#d8d0c4] bg-white px-4 text-sm font-semibold text-[#9f3f2f] transition hover:border-[#9f3f2f] ${
+        className={`rounded-md border border-[#d8d0c4] bg-white px-4 text-sm font-semibold text-[#9f3f2f] transition hover:border-[#9f3f2f] disabled:cursor-not-allowed disabled:opacity-60 ${
           compact ? "h-10" : "h-11"
         }`}
-        disabled={isSubmitting}
-        onClick={() => {
-          void handleLogout();
-        }}
+        disabled={isPending}
+        onClick={handleLogout}
         type="button"
       >
-        {isSubmitting ? "로그아웃 중..." : "로그아웃"}
+        {isPending ? "로그아웃 중..." : "로그아웃"}
       </button>
 
       {errorMessage ? (

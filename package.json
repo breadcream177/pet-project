@@ -8,14 +8,25 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "check": "npm run lint && npm run typecheck && npm run build"
+    "check": "npm run lint && npm run typecheck && npm run build",
+    "cap:sync": "capacitor sync android",
+    "cap:sync:dev": "set CAPACITOR_SERVER_URL=http://10.0.2.2:3000&& capacitor sync android",
+    "cap:open": "capacitor open android",
+    "android:dev": "set CAPACITOR_SERVER_URL=http://10.0.2.2:3000&& capacitor run android"
   },
   "dependencies": {
+    "@capacitor/android": "^8.4.1",
+    "@capacitor/app": "^8.1.0",
+    "@capacitor/cli": "^8.4.1",
+    "@capacitor/core": "^8.4.1",
+    "@capacitor/push-notifications": "^8.1.1",
     "@supabase/ssr": "0.12.0",
     "@supabase/supabase-js": "2.108.2",
+    "@types/web-push": "^3.6.4",
     "next": "16.2.7",
     "react": "19.2.7",
-    "react-dom": "19.2.7"
+    "react-dom": "19.2.7",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.3.0",

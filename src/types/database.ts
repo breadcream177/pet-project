@@ -132,6 +132,96 @@ export type Database = {
         };
         Relationships: [];
       };
+      push_subscriptions: {
+        Row: {
+          auth_key: string;
+          created_at: string;
+          endpoint: string;
+          expiration_time: string | null;
+          id: string;
+          p256dh_key: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          auth_key: string;
+          created_at?: string;
+          endpoint: string;
+          expiration_time?: string | null;
+          id?: string;
+          p256dh_key: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          auth_key?: string;
+          created_at?: string;
+          endpoint?: string;
+          expiration_time?: string | null;
+          id?: string;
+          p256dh_key?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      device_tokens: {
+        Row: {
+          created_at: string;
+          device_label: string | null;
+          id: string;
+          last_seen_at: string;
+          platform: "android" | "ios" | "web";
+          token: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          device_label?: string | null;
+          id?: string;
+          last_seen_at?: string;
+          platform: "android" | "ios" | "web";
+          token: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          device_label?: string | null;
+          id?: string;
+          last_seen_at?: string;
+          platform?: "android" | "ios" | "web";
+          token?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      notification_preferences: {
+        Row: {
+          created_at: string;
+          enabled: boolean;
+          minutes_before: number;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          enabled?: boolean;
+          minutes_before?: number;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          enabled?: boolean;
+          minutes_before?: number;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
