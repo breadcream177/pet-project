@@ -14,17 +14,16 @@
 
 ## 주요 기능
 
-- Supabase Auth 기반 회원가입, 로그인, 로그아웃
-- 로그인 사용자별 반려동물 등록 및 조회
-- 반려동물별 일정 등록 및 조회
-- 매일/매주/반복 없음 일정 규칙 처리
-- 오늘 일정 완료 체크 저장
-- 일정 완료 상태를 `schedule_completions`로 분리 저장
-- 설정 화면에서 이메일 일부 마스킹
-- Android 앱 푸시 알림 켜기/끄기
-- FCM 디바이스 토큰 저장
-- 앱 테스트 알림 발송
-- 웹/PWA 푸시 테스트 기능 분리
+- 인증: Supabase Auth 기반 회원가입, 로그인, 로그아웃
+- 세션 관리: Supabase SSR 쿠키 기반 세션 관리
+- 반려동물 관리: 로그인 사용자별 반려동물 등록 및 조회
+- 일정 관리: 반려동물별 일정 등록 및 조회
+- 반복 일정: 매일, 매주, 반복 없음 규칙 처리
+- 체크리스트: 오늘 일정 완료 체크 저장
+- 데이터 분리: 일정 원본은 `schedules`, 날짜별 완료 기록은 `schedule_completions`로 분리
+- 개인정보 표시: 설정 화면과 헤더에서 이메일 일부 마스킹
+- Android 앱 알림: FCM 디바이스 토큰 저장, 알림 권한 요청, 테스트 푸시 발송
+- 웹 푸시 테스트: PWA/Web Push 검증 패널을 개발용으로 분리
 
 ## 기술 스택
 
@@ -84,102 +83,78 @@ Supabase
 
 ## ERD
 
+아래 ERD는 실제 `supabase/migrations`에 정의된 테이블과 컬럼을 기준으로 정리했습니다. Supabase Auth의 `auth.users`는 Supabase가 관리하는 인증 테이블이고, 앱에서 직접 관리하는 공개 스키마 테이블은 `profiles`, `pets`, `schedules`, `schedule_completions`, `device_tokens`, `notification_preferences`, `push_subscriptions`입니다.
+
+### 관계도
+
 ```mermaid
 erDiagram
-  PROFILES ||--o{ PETS : owns
-  PROFILES ||--o{ SCHEDULES : creates
-  PROFILES ||--o{ SCHEDULE_COMPLETIONS : checks
-  PROFILES ||--o{ DEVICE_TOKENS : registers
-  PROFILES ||--o| NOTIFICATION_PREFERENCES : configures
-  PROFILES ||--o{ PUSH_SUBSCRIPTIONS : tests
-  PETS ||--o{ SCHEDULES : has
-  SCHEDULES ||--o{ SCHEDULE_COMPLETIONS : records
-
-  PROFILES {
-    uuid id PK
-    text display_name
-    timestamptz created_at
-    timestamptz updated_at
-  }
-
-  PETS {
-    uuid id PK
-    uuid user_id FK
-    text name
-    text species
-    text color
-    text memo
-    timestamptz created_at
-    timestamptz updated_at
-  }
-
-  SCHEDULES {
-    uuid id PK
-    uuid user_id FK
-    uuid pet_id FK
-    text title
-    text category
-    time time
-    date start_date
-    text repeat_rule
-    int day_of_week
-    boolean is_active
-    timestamptz created_at
-    timestamptz updated_at
-  }
-
-  SCHEDULE_COMPLETIONS {
-    uuid id PK
-    uuid user_id FK
-    uuid schedule_id FK
-    date completed_date
-    timestamptz completed_at
-  }
-
-  DEVICE_TOKENS {
-    uuid id PK
-    uuid user_id FK
-    text platform
-    text token
-    text device_label
-    timestamptz last_seen_at
-  }
-
-  NOTIFICATION_PREFERENCES {
-    uuid user_id PK
-    boolean enabled
-    int minutes_before
-    timestamptz updated_at
-  }
-
-  PUSH_SUBSCRIPTIONS {
-    uuid id PK
-    uuid user_id FK
-    text endpoint
-    text p256dh_key
-    text auth_key
-    timestamptz created_at
-  }
+  AUTH_USERS ||--|| PROFILES : "has profile"
+  AUTH_USERS ||--o{ PETS : "owns"
+  AUTH_USERS ||--o{ SCHEDULES : "creates"
+  AUTH_USERS ||--o{ SCHEDULE_COMPLETIONS : "checks"
+  AUTH_USERS ||--o{ DEVICE_TOKENS : "registers"
+  AUTH_USERS ||--o| NOTIFICATION_PREFERENCES : "sets"
+  AUTH_USERS ||--o{ PUSH_SUBSCRIPTIONS : "subscribes"
+  PETS ||--o{ SCHEDULES : "has schedules"
+  SCHEDULES ||--o{ SCHEDULE_COMPLETIONS : "has completion records"
 ```
 
-## API / Server Action 요약
+### 테이블 관계
 
-챙겨펫은 Next.js App Router 구조라 별도 REST API Controller보다 Route Handler와 Server Action을 중심으로 동작합니다. 자세한 흐름은 [docs/API.md](docs/API.md)를 참고합니다.
+- 한 사용자는 하나의 `profiles` row를 가집니다.
+- 한 사용자는 여러 `pets`를 등록할 수 있습니다.
+- 한 반려동물은 여러 `schedules`를 가질 수 있습니다.
+- 한 일정은 날짜별로 여러 `schedule_completions` 기록을 가질 수 있습니다.
+- 한 사용자는 여러 Android/Web 기기 토큰을 `device_tokens`에 저장할 수 있습니다.
+- 한 사용자는 하나의 `notification_preferences` 설정을 가질 수 있습니다.
+- `push_subscriptions`는 웹 푸시 개발 테스트용 구독 정보를 저장합니다.
 
-| 구분 | 화면 | 처리 단위 | DB/외부 서비스 | 상태 |
+### 엔티티 목록
+
+| 테이블 | 주요 필드 | 설명 |
+| --- | --- | --- |
+| `profiles` | `id(PK/FK)`, `display_name`, `created_at`, `updated_at` | Supabase Auth 사용자와 1:1로 연결되는 프로필 |
+| `pets` | `id(PK)`, `user_id(FK)`, `name`, `species`, `color`, `memo`, `created_at`, `updated_at` | 사용자가 등록한 반려동물 |
+| `schedules` | `id(PK)`, `user_id(FK)`, `pet_id(FK)`, `title`, `category`, `time`, `start_date`, `repeat_rule`, `day_of_week`, `is_active`, `created_at`, `updated_at` | 반복 규칙을 가진 일정 원본 |
+| `schedule_completions` | `id(PK)`, `user_id(FK)`, `schedule_id(FK)`, `completed_date`, `completed_at` | 특정 날짜에 완료 체크한 기록 |
+| `device_tokens` | `id(PK)`, `user_id(FK)`, `platform`, `token`, `device_label`, `last_seen_at`, `created_at`, `updated_at` | Android 앱 푸시 발송용 FCM 토큰 |
+| `notification_preferences` | `user_id(PK/FK)`, `enabled`, `minutes_before`, `created_at`, `updated_at` | 사용자별 알림 사용 여부와 사전 알림 시간 |
+| `push_subscriptions` | `id(PK)`, `user_id(FK)`, `endpoint`, `p256dh_key`, `auth_key`, `expiration_time`, `created_at`, `updated_at` | 웹 푸시 테스트용 구독 정보 |
+
+## API / Action 명세
+
+챙겨펫은 Next.js App Router 구조라 게시판 프로젝트처럼 모든 기능을 REST API로 분리하지 않았습니다. 로그인/회원가입은 Route Handler로 처리하고, 반려동물/일정/알림 기능은 Server Action을 통해 서버에서 Supabase에 접근합니다. 자세한 흐름은 [docs/API.md](docs/API.md)를 참고합니다.
+
+### Route Handler
+
+| Method | Endpoint | 요청 데이터 | 응답 | 파일 |
 | --- | --- | --- | --- | --- |
-| 회원가입 | `/signup` | `src/app/auth/signup/route.ts` | Supabase Auth | 구현 |
-| 로그인 | `/login` | `src/app/auth/login/route.ts` | Supabase Auth | 구현 |
-| 로그아웃 | 공통 헤더/설정 | `LogoutButton` | Supabase Auth | 구현 |
-| 반려동물 등록 | `/pets` | `createPetAction` | `pets` | 구현 |
-| 반려동물 조회 | `/pets`, `/schedules`, `/` | Server Component query | `pets` | 구현 |
-| 일정 등록 | `/schedules` | `createScheduleAction` | `schedules` | 구현 |
-| 일정 조회 | `/schedules`, `/` | Server Component query | `schedules` | 구현 |
-| 오늘 완료 체크 | `/` | `toggleScheduleCompletionAction` | `schedule_completions` | 구현 |
-| 알림 설정 저장 | `/settings` | `saveNotificationPreferenceAction` | `notification_preferences` | 구현 |
-| Android 토큰 저장 | `/settings` | `saveDeviceTokenAction` | `device_tokens` | 구현 |
-| 테스트 푸시 발송 | `/settings` | `sendTestAppPushNotificationAction` | Firebase Cloud Messaging | 구현 |
-| 예약 푸시 발송 | 서버 작업 예정 | Cron 또는 Edge Function 후보 | `schedules`, `device_tokens` | 개선 예정 |
+| `POST` | `/auth/signup` | `email`, `password`, `displayName` | Form 요청은 redirect, JSON 요청은 `{ ok, requiresEmailConfirmation }` | `src/app/auth/signup/route.ts` |
+| `POST` | `/auth/login` | `email`, `password` | Form 요청은 redirect, JSON 요청은 `{ ok: true }` | `src/app/auth/login/route.ts` |
+
+### Server Action
+
+| 기능 | 화면 | 요청 데이터 | 처리 결과 | 파일 |
+| --- | --- | --- | --- | --- |
+| 반려동물 등록 | `/pets` | `name`, `species`, `customSpecies`, `color`, `memo` | `pets`에 저장 후 관련 화면 갱신 | `src/features/pets/actions.ts` |
+| 일정 등록 | `/schedules` | `petId`, `title`, `category`, `time`, `startDate`, `repeatRule` | `schedules`에 저장 후 홈/일정 화면 갱신 | `src/features/schedules/actions.ts` |
+| 오늘 완료 체크 | `/` | `scheduleId`, `completed`, `date` | `schedule_completions` 추가 또는 삭제 | `src/features/schedules/actions.ts` |
+| 알림 설정 저장 | `/settings` | `enabled`, `minutesBefore` | `notification_preferences`에 upsert | `src/features/notifications/actions.ts` |
+| Android 토큰 저장 | `/settings` | `platform`, `token`, `deviceLabel` | `device_tokens`에 upsert | `src/features/notifications/actions.ts` |
+| Android 토큰 삭제 | `/settings` | `token` 또는 `platform` | `device_tokens`에서 삭제 | `src/features/notifications/actions.ts` |
+| Android 테스트 푸시 | `/settings` | 현재 로그인 사용자 | FCM HTTP v1로 테스트 알림 발송 | `src/features/notifications/actions.ts` |
+| 웹 푸시 구독 저장 | `/settings` | `endpoint`, `p256dh`, `auth`, `expirationTime` | `push_subscriptions`에 upsert | `src/features/notifications/actions.ts` |
+| 웹 푸시 테스트 | `/settings` | 현재 로그인 사용자 | Web Push 테스트 알림 발송 | `src/features/notifications/actions.ts` |
+
+### 조회 흐름
+
+| 화면 | 조회 대상 | 설명 |
+| --- | --- | --- |
+| `/` | `pets`, `schedules`, `schedule_completions` | 오늘 날짜와 반복 규칙을 기준으로 오늘 할 일을 계산 |
+| `/pets` | `pets` | 로그인 사용자의 반려동물 목록 조회 |
+| `/schedules` | `pets`, `schedules` | 반려동물 선택 목록과 등록된 일정 조회 |
+| `/settings` | `notification_preferences` | 알림 설정과 계정 정보 표시 |
 
 ## 보안 고려
 
@@ -292,6 +267,17 @@ npm.cmd run build
 ```bash
 npm.cmd run check
 ```
+
+## 트러블슈팅 기록
+
+| 문제 | 원인 | 해결 |
+| --- | --- | --- |
+| Android 에뮬레이터에서 `localhost:3000` 접속 실패 | 에뮬레이터의 `localhost`는 PC가 아니라 에뮬레이터 자기 자신을 가리킴 | Capacitor 개발 서버 주소를 `http://10.0.2.2:3000`으로 설정 |
+| Next.js 개발 서버가 Android WebView 요청을 차단 | 개발 서버 origin 허용 범위에 에뮬레이터 주소가 없음 | `next.config.ts`에 `allowedDevOrigins` 설정 추가 |
+| 반려동물/일정 등록 후 화면이 바로 갱신되지 않음 | Server Action 성공 후 클라이언트 라우터 갱신이 부족함 | 등록/체크 컴포넌트에서 `router.refresh()` 호출 |
+| Android 앱과 웹 알림 UI가 섞여 보임 | 웹 푸시 테스트 UI와 앱 푸시 UI의 목적이 다름 | Android 앱에서는 개발용 웹 푸시 패널을 숨기고 앱 푸시 안내를 우선 표시 |
+| Android 앱 배포 시 ADB가 `device still authorizing` 상태로 멈춤 | 에뮬레이터/ADB 연결 상태가 불안정하거나 대상 기기 승인이 완료되지 않음 | 에뮬레이터 재시작, ADB devices 확인, 앱 재배포 순서로 점검 |
+| 일부 서버 액션 메시지의 한글 문자열 깨짐 | 파일 저장 또는 패치 과정에서 인코딩이 깨진 문자열이 남아 있음 | 기능 동작과 별개로 사용자 메시지 문자열은 후속 정리 대상으로 분리 |
 
 ## 현재 진행 상태
 
