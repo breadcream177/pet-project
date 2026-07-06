@@ -82,6 +82,105 @@ Supabase
 
 자세한 DB 설계는 [docs/DATABASE.md](docs/DATABASE.md)를 참고합니다.
 
+## ERD
+
+```mermaid
+erDiagram
+  PROFILES ||--o{ PETS : owns
+  PROFILES ||--o{ SCHEDULES : creates
+  PROFILES ||--o{ SCHEDULE_COMPLETIONS : checks
+  PROFILES ||--o{ DEVICE_TOKENS : registers
+  PROFILES ||--o| NOTIFICATION_PREFERENCES : configures
+  PROFILES ||--o{ PUSH_SUBSCRIPTIONS : tests
+  PETS ||--o{ SCHEDULES : has
+  SCHEDULES ||--o{ SCHEDULE_COMPLETIONS : records
+
+  PROFILES {
+    uuid id PK
+    text display_name
+    timestamptz created_at
+    timestamptz updated_at
+  }
+
+  PETS {
+    uuid id PK
+    uuid user_id FK
+    text name
+    text species
+    text color
+    text memo
+    timestamptz created_at
+    timestamptz updated_at
+  }
+
+  SCHEDULES {
+    uuid id PK
+    uuid user_id FK
+    uuid pet_id FK
+    text title
+    text category
+    time time
+    date start_date
+    text repeat_rule
+    int day_of_week
+    boolean is_active
+    timestamptz created_at
+    timestamptz updated_at
+  }
+
+  SCHEDULE_COMPLETIONS {
+    uuid id PK
+    uuid user_id FK
+    uuid schedule_id FK
+    date completed_date
+    timestamptz completed_at
+  }
+
+  DEVICE_TOKENS {
+    uuid id PK
+    uuid user_id FK
+    text platform
+    text token
+    text device_label
+    timestamptz last_seen_at
+  }
+
+  NOTIFICATION_PREFERENCES {
+    uuid user_id PK
+    boolean enabled
+    int minutes_before
+    timestamptz updated_at
+  }
+
+  PUSH_SUBSCRIPTIONS {
+    uuid id PK
+    uuid user_id FK
+    text endpoint
+    text p256dh_key
+    text auth_key
+    timestamptz created_at
+  }
+```
+
+## API / Server Action 요약
+
+챙겨펫은 Next.js App Router 구조라 별도 REST API Controller보다 Route Handler와 Server Action을 중심으로 동작합니다. 자세한 흐름은 [docs/API.md](docs/API.md)를 참고합니다.
+
+| 구분 | 화면 | 처리 단위 | DB/외부 서비스 | 상태 |
+| --- | --- | --- | --- | --- |
+| 회원가입 | `/signup` | `src/app/auth/signup/route.ts` | Supabase Auth | 구현 |
+| 로그인 | `/login` | `src/app/auth/login/route.ts` | Supabase Auth | 구현 |
+| 로그아웃 | 공통 헤더/설정 | `LogoutButton` | Supabase Auth | 구현 |
+| 반려동물 등록 | `/pets` | `createPetAction` | `pets` | 구현 |
+| 반려동물 조회 | `/pets`, `/schedules`, `/` | Server Component query | `pets` | 구현 |
+| 일정 등록 | `/schedules` | `createScheduleAction` | `schedules` | 구현 |
+| 일정 조회 | `/schedules`, `/` | Server Component query | `schedules` | 구현 |
+| 오늘 완료 체크 | `/` | `toggleScheduleCompletionAction` | `schedule_completions` | 구현 |
+| 알림 설정 저장 | `/settings` | `saveNotificationPreferenceAction` | `notification_preferences` | 구현 |
+| Android 토큰 저장 | `/settings` | `saveDeviceTokenAction` | `device_tokens` | 구현 |
+| 테스트 푸시 발송 | `/settings` | `sendTestAppPushNotificationAction` | Firebase Cloud Messaging | 구현 |
+| 예약 푸시 발송 | 서버 작업 예정 | Cron 또는 Edge Function 후보 | `schedules`, `device_tokens` | 개선 예정 |
+
 ## 보안 고려
 
 - `.env.local`은 Git에 커밋하지 않습니다.
@@ -194,18 +293,27 @@ npm.cmd run build
 npm.cmd run check
 ```
 
-## 현재 한계와 다음 작업
+## 현재 진행 상태
 
-- 예약 알림 자동 발송은 아직 서버 Cron 또는 Supabase Edge Function으로 분리해야 합니다.
-- Android 앱은 개발 서버 연결 방식이며, 배포용 앱 빌드 전략은 별도 정리가 필요합니다.
-- SMS/알림톡은 유료 외부 API가 필요하므로 후속 단계에서 선택 기능으로 검토합니다.
-- 반려동물/일정 수정과 삭제 기능은 다음 MVP 단계에서 추가할 예정입니다.
-- 앱 아이콘, 스플래시, 스토어 배포 문서는 아직 정리 전입니다.
+| 영역 | 현재 상태 |
+| --- | --- |
+| 인증 | Supabase Auth 기반 회원가입, 로그인, 로그아웃 구현 |
+| 데이터 보안 | 사용자별 `user_id`와 RLS 정책으로 개인 데이터 분리 |
+| 반려동물 | 등록과 조회 구현, 일정 등록 시 반려동물 선택 연동 |
+| 일정 | 일정 등록, 조회, 매일/매주/반복 없음 규칙 처리 구현 |
+| 완료 체크 | 날짜별 완료 기록을 `schedule_completions`에 저장하고 홈 화면에 반영 |
+| 설정 | 이메일 마스킹, 로그아웃, 알림 설정 저장 구조 구현 |
+| Android 앱 | Capacitor 기반 Android 앱 실행, Next.js 화면 재사용 구조 구성 |
+| 앱 푸시 | FCM 토큰 저장, 알림 권한 요청, 테스트 푸시 발송 흐름 구현 |
+| 웹 푸시 | 개발 검증용 패널로 분리하고 Android 앱 화면에서는 숨김 처리 |
+| 문서화 | DB 설계, API 흐름, Android 전환 방향, 작업 원칙 문서 작성 |
 
-## 포트폴리오 설명 포인트
+## 추후 개선 작업
 
-- 단순 CRUD가 아니라 개인 일정 관리 도메인에 맞춰 반복 일정과 완료 기록을 분리했습니다.
-- Supabase RLS로 사용자별 데이터 접근을 제한했습니다.
-- 웹 관리 화면과 Android 앱을 함께 고려해 Capacitor 전환을 진행했습니다.
-- 앱 푸시 알림을 위해 FCM 토큰 저장, 알림 설정, 테스트 발송 흐름을 구현했습니다.
-- 개발 중 발견한 Android WebView, Next dev origin, 화면 갱신 문제를 로그 기반으로 해결했습니다.
+- 예약 알림 자동 발송을 서버 Cron, Supabase Edge Function, 또는 별도 백엔드 작업으로 분리
+- 반려동물 수정/삭제 기능 추가
+- 일정 수정/삭제 기능 추가
+- 알림 수신 기기 목록과 기기별 알림 해제 기능 추가
+- Android 배포용 빌드, 앱 서명, 아이콘, 스플래시, 스토어 등록 문서 정리
+- 실제 운영 환경 기준의 로깅, 에러 추적, 모니터링 도입
+- SMS/알림톡은 비용과 개인정보 동의 범위를 검토한 뒤 선택 기능으로 판단
