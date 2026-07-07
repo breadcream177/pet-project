@@ -1,8 +1,30 @@
 # 챙겨펫
 
-반려동물의 밥, 산책, 약, 병원 일정을 개인별로 관리하고, 오늘 해야 할 일을 체크할 수 있는 모바일 중심 웹/앱 서비스입니다.
+## 목적
 
-현재 구현은 **Next.js 웹 앱을 기반으로 Supabase Auth/DB를 연결하고, Capacitor Android 앱에서 Firebase Cloud Messaging 알림을 받을 수 있는 구조**까지 진행되어 있습니다. 웹은 PC 관리 화면, Android 앱은 실사용 알림과 모바일 확인 화면을 목표로 합니다.
+반려동물을 돌볼 때 반복적으로 발생하는 일정을 한 곳에서 기록하고 확인하는 흐름을 이해하기 위해 진행한 프로젝트입니다.  
+사용자별 반려동물 정보와 일정 데이터를 분리해 관리하고, 완료 여부를 기록하는 구조를 직접 구성해보는 데 목적을 두었습니다.
+
+## 프로젝트 소개
+
+Next.js와 Supabase를 기반으로 구현한 반려동물 일정 관리 웹앱 프로젝트입니다.  
+사용자별로 반려동물 정보를 등록하고, 밥, 산책, 약, 병원 일정 등을 관리할 수 있도록 구성했습니다.
+
+반려동물 등록, 일정 등록, 반복 일정, 오늘 일정 확인, 완료 체크, 완료 기록 저장, 알림 토큰 저장 기능 등을 구현했습니다.
+
+## Preview
+
+
+
+
+<img width="1957" height="1342" alt="image" src="https://github.com/user-attachments/assets/215177d8-b3c7-4fe3-b96e-dce62a14faaf" />
+<img width="1957" height="1261" alt="image" src="https://github.com/user-attachments/assets/298c5a61-5f4d-4693-a671-612cb30b0f58" />
+
+
+
+
+
+
 
 ## 프로젝트 목표
 
